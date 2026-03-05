@@ -244,18 +244,25 @@ def test_create_student_and_fetch_all_students(client):
     data = response.json()
 
     assert response.status_code == 200
-    assert data == [{
+    assert data == [
+        {
+            "student_email": "another@student.com",
+            "first_name": "Another",
+            "surname": "Student",
+            "instrument": "piano",
+        },
+        {
             "student_email": "joe@bloggs.com",
             "first_name": "Joe",
             "surname": "Bloggs",
             "instrument": "piano",
         },
         {
-            "student_email": "another@student.com",
-            "first_name": "Another",
-            "surname": "Student",
-            "instrument": "piano",
-        }
+            "student_email": "some@person.com",
+            "first_name": "Some",
+            "surname": "Person",
+            "instrument": "violin",
+        },
     ]
 
 def test_delete_student(client):
@@ -330,3 +337,34 @@ def test_update_non_existent_student(client):
 
     assert response.status_code == 404
     assert data == {"detail": "Student not found"}
+
+def test_filter_students_by_instrument(client):
+    response = client.get("/api/v1/students?instrument=piano")
+
+    data = response.json()
+
+    assert response.status_code == 200
+    assert len(data) == 1
+    assert all(s["instrument"] == "piano" for s in data)
+
+def test_create_student_invalid_email(client):
+    response = client.post(
+        "/api/v1/students",
+        json={
+            "student_email": "not_an_email",
+            "first_name": "Bad",
+            "surname": "Email",
+            "instrument": "piano",
+        }
+    )
+
+    assert response.status_code == 422
+
+def test_filter_students_by_violin(client):
+    response = client.get("/api/v1/students?instrument=violin")
+
+    data = response.json()
+
+    assert response.status_code == 200
+    assert len(data) == 1
+    assert data[0]["instrument"] == "violin"

@@ -31,8 +31,9 @@ async def get_student_record(
     summary="Get a list of all students",
     description="Fetches a list of all student's records"
 )
-async def get_all_students(service: StudentService = Depends(get_student_service)) -> list[StudentResponse]:
-    return service.list_students()
+async def get_all_students(
+        instrument: str | None = None, service: StudentService = Depends(get_student_service)) -> list[StudentResponse]:
+    return service.list_students(instrument)
 
 @students_router.post(
     "/students",

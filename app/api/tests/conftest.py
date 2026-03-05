@@ -42,6 +42,14 @@ def setup_database():
                 instrument="piano",
             )
         )
+        db.add(
+            StudentDB(
+                student_email="some@person.com",
+                first_name="Some",
+                surname="Person",
+                instrument="violin",
+            )
+        )
         db.commit()
     finally:
         db.close()

@@ -8,7 +8,7 @@ class StudentRepository:
     def get_student_by_email(self, email: str) -> Student | None:
         raise NotImplementedError
 
-    def list_students(self):
+    def list_students(self, instrument: str | None = None):
         raise NotImplementedError
 
     def create_student(self, student: StudentResponse):
@@ -38,8 +38,12 @@ class InMemoryStudentRepository(StudentRepository):
                 return student
         return None
 
-    def list_students(self):
-        return [s for s in self.students]
+    def list_students(self, instrument: str | None = None):
+        students = self.students
+        if instrument:
+            students = [s for s in self.students if s.instrument == instrument]
+
+        return sorted(students, key=lambda s: s.student_email)
 
     def create_student(self, student: StudentResponse):
         self.students.append(
@@ -91,8 +95,14 @@ class SqlAlchemyStudentRepository(StudentRepository):
             instrument=row.instrument,
         )
 
-    def list_students(self) -> list[Student]:
-        rows = self.db.query(StudentDB).all()
+    def list_students(self, instrument: str | None = None) -> list[Student]:
+        query = self.db.query(StudentDB)
+
+        if instrument:
+            query = query.filter(StudentDB.instrument == instrument)
+
+        rows = query.order_by(StudentDB.student_email).all()
+
         return [
             Student(
             student_email=row.student_email,

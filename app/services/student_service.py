@@ -2,7 +2,7 @@ from app.core.exceptions import DomainError
 from app.repositories.lesson_repository import LessonRepository
 from app.repositories.student_repository import StudentRepository
 from app.schemas.remaining_lessons import RemainingLessonsResponse, RemainingLessonsRequest, Lesson
-from app.schemas.student import StudentRequest, StudentResponse, CreateStudentRequest, UpdateStudentRequest
+from app.schemas.student import StudentRequest, StudentResponse, CreateStudentRequest, UpdateStudentRequest, Student
 
 
 class StudentService:
@@ -10,6 +10,14 @@ class StudentService:
     def __init__(self, lesson_repo: LessonRepository, student_repo: StudentRepository):
         self.lesson_repo = lesson_repo
         self.student_repo = student_repo
+
+    def construct_student_response(self, student: Student) -> StudentResponse:
+        return StudentResponse(
+            student_email=student.student_email,
+            first_name=student.first_name,
+            surname=student.surname,
+            instrument=student.instrument,
+        )
 
     def get_remaining_lessons(self, body: RemainingLessonsRequest) -> RemainingLessonsResponse:
         if body.student_email.strip() == "":
@@ -35,12 +43,7 @@ class StudentService:
         student = self.student_repo.get_student_by_email(body.student_email)
 
         if student is not None:
-            return StudentResponse(
-                student_email=student.student_email,
-                first_name=student.first_name,
-                surname=student.surname,
-                instrument=student.instrument,
-            )
+            return self.construct_student_response(student)
         else:
             raise DomainError("Student not found", status_code=404)
 
@@ -61,17 +64,9 @@ class StudentService:
             self.student_repo.create_student(student)
             return student
 
-    def list_students(self) -> list[StudentResponse] | None:
-        students = self.student_repo.list_students()
-        return [
-            StudentResponse(
-                student_email=student.student_email,
-                first_name=student.first_name,
-                surname=student.surname,
-                instrument=student.instrument,
-            )
-            for student in students
-        ]
+    def list_students(self, instrument: str | None = None) -> list[StudentResponse] | None:
+        students = self.student_repo.list_students(instrument)
+        return [self.construct_student_response(student) for student in students]
 
     def delete_student(self, body: StudentRequest) -> None:
         if body.student_email.strip() == "":
