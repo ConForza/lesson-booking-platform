@@ -1,5 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+
+from app.api.v1.auth import auth_router
 from app.api.v1.health import health_router
 from app.api.v1.invoice import invoice_router
 from app.api.v1.students import students_router
@@ -30,7 +32,7 @@ app = FastAPI(
 app.include_router(health_router, prefix=settings.api_v1_prefix)
 app.include_router(invoice_router, prefix=settings.api_v1_prefix)
 app.include_router(students_router, prefix=settings.api_v1_prefix)
-
+app.include_router(auth_router, prefix=settings.api_v1_prefix)
 
 @app.get("/")
 async def root(settings: Settings = Depends(get_settings)):
@@ -39,7 +41,6 @@ async def root(settings: Settings = Depends(get_settings)):
         "environment": settings.environment,
         "version": settings.version,
     }
-
 
 @app.exception_handler(DomainError)
 async def domain_error_handler(request: Request, exc: DomainError):

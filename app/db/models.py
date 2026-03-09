@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean
 from app.db.database import Base
 
 class StudentDB(Base):
@@ -17,3 +17,11 @@ class LessonDB(Base):
     student_email = Column(String, index=True, nullable=False)
     instrument = Column(String, nullable=False)
     duration = Column(Integer, nullable=False)
+
+class UserDB(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, unique=True, index=True, nullable=False)
+    password_hash = Column(String, nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)

@@ -1,3 +1,8 @@
+from app.api.tests.conftest import TestingSessionLocal
+from app.core.security import verify_password, hash_password
+from app.repositories.user_repository import UserRepository, InMemoryUserRepository, SqlAlchemyUserRepository
+
+
 def test_health(client):
     response = client.get("/api/v1/health")
 
@@ -366,3 +371,37 @@ def test_filter_students_by_violin(client):
     assert response.status_code == 200
     assert len(data) == 1
     assert data[0]["instrument"] == "violin"
+
+def test_create_user(client, db_session):
+    response = client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "another@user.com",
+            "password": "new_password",
+        }
+    )
+
+    data = response.json()
+
+    assert response.status_code == 201
+    assert data["email"] == "another@user.com"
+
+    user_repo = SqlAlchemyUserRepository(db_session)
+    user = user_repo.get_user_by_email("another@user.com")
+
+    assert user is not None
+    assert verify_password("new_password", user.password)
+
+def test_create_user_short_password(client):
+    response = client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "another@user.com",
+            "password": "secret",
+        }
+    )
+
+    data = response.json()
+
+    assert response.status_code == 400
+    assert data == {"detail": "Password must be at least 8 characters"}

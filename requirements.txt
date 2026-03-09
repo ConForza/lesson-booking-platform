@@ -15,11 +15,17 @@ anyio==4.12.1
     #   httpx
     #   starlette
     #   watchfiles
+argon2-cffi==25.1.0
+    # via pwdlib
+argon2-cffi-bindings==25.1.0
+    # via argon2-cffi
 certifi==2026.2.25
     # via
     #   httpcore
     #   httpx
     #   sentry-sdk
+cffi==2.0.0
+    # via argon2-cffi-bindings
 click==8.3.1
     # via
     #   rich-toolkit
@@ -70,6 +76,10 @@ packaging==26.0
     # via pytest
 pluggy==1.6.0
     # via pytest
+pwdlib[argon2]==0.3.0
+    # via -r requirements.in
+pycparser==3.0
+    # via cffi
 pydantic[email]==2.12.5
     # via
     #   fastapi
