@@ -1,6 +1,5 @@
-from app.api.tests.conftest import TestingSessionLocal
-from app.core.security import verify_password, hash_password
-from app.repositories.user_repository import UserRepository, InMemoryUserRepository, SqlAlchemyUserRepository
+from app.core.security import verify_password
+from app.repositories.user_repository import SqlAlchemyUserRepository
 
 
 def test_health(client):
@@ -405,3 +404,45 @@ def test_create_user_short_password(client):
 
     assert response.status_code == 400
     assert data == {"detail": "Password must be at least 8 characters"}
+
+def test_login_success(client):
+    client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "login@test.com",
+            "password": "password123",
+        }
+    )
+
+    response = client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": "login@test.com",
+            "password": "password123",
+        }
+    )
+
+    data = response.json()
+
+    assert response.status_code == 200
+    assert "access_token" in data
+    assert data["token_type"] == "bearer"
+
+def test_login_wrong_password(client):
+    client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "login@test.com",
+            "password": "password123",
+        }
+    )
+
+    response = client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": "login@test.com",
+            "password": "wrongpassword",
+        }
+    )
+
+    assert response.status_code == 401

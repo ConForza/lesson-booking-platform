@@ -96,6 +96,8 @@ pygments==2.19.2
     # via
     #   pytest
     #   rich
+pyjwt==2.11.0
+    # via -r requirements.in
 pytest==9.0.2
     # via -r requirements.in
 python-dotenv==1.2.1

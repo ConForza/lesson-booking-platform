@@ -2,3 +2,4 @@ fastapi[standard]
 pytest
 sqlalchemy
 pwdlib[argon2]
+pyjwt
