@@ -2,7 +2,9 @@ from fastapi import APIRouter, Depends
 from fastapi.params import Query
 
 from app.core.deps import get_student_service
+from app.core.auth import get_current_user
 from app.schemas.student import StudentRequest, StudentResponse, CreateStudentRequest, UpdateStudentRequest
+from app.schemas.auth import User
 from app.services.student_service import StudentService
 from app.schemas.remaining_lessons import RemainingLessonsResponse, RemainingLessonsRequest
 
@@ -33,7 +35,10 @@ async def get_student_record(
     description="Fetches a list of all student's records"
 )
 async def get_all_students(
-        instrument: str | None = Query(None), service: StudentService = Depends(get_student_service)) -> list[StudentResponse]:
+    instrument: str | None = Query(None),
+    service: StudentService = Depends(get_student_service),
+    current_user: User = Depends(get_current_user)
+) -> list[StudentResponse]:
     return service.list_students(instrument)
 
 @students_router.post(

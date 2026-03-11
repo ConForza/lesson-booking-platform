@@ -243,7 +243,19 @@ def test_create_student_and_fetch_all_students(client):
         }
     )
 
-    response = client.get("/api/v1/students")
+    client.post(
+        "/api/v1/auth/register",
+        json={"email": "test@test.com", "password": "password123"}
+    )
+
+    login = client.post(
+        "/api/v1/auth/login",
+        data={"username": "test@test.com", "password": "password123"}
+    )
+
+    token = login.json()["access_token"]
+
+    response = client.get("/api/v1/students", headers={"Authorization": f"Bearer {token}"})
 
     data = response.json()
 
@@ -341,7 +353,19 @@ def test_update_non_existent_student(client):
     assert data == {"detail": "Student not found"}
 
 def test_filter_students_by_instrument(client):
-    response = client.get("/api/v1/students?instrument=piano")
+    client.post(
+        "/api/v1/auth/register",
+        json={"email": "test@test.com", "password": "password123"}
+    )
+
+    login = client.post(
+        "/api/v1/auth/login",
+        data={"username": "test@test.com", "password": "password123"}
+    )
+
+    token = login.json()["access_token"]
+
+    response = client.get("/api/v1/students?instrument=piano", headers={"Authorization": f"Bearer {token}"})
 
     data = response.json()
 
@@ -363,7 +387,20 @@ def test_create_student_invalid_email(client):
     assert response.status_code == 422
 
 def test_filter_students_by_violin(client):
-    response = client.get("/api/v1/students?instrument=violin")
+    client.post(
+        "/api/v1/auth/register",
+        json={"email": "test@test.com", "password": "password123"}
+    )
+
+    login = client.post(
+        "/api/v1/auth/login",
+        data={"username": "test@test.com", "password": "password123"}
+    )
+
+    token = login.json()["access_token"]
+
+
+    response = client.get("/api/v1/students?instrument=violin", headers={"Authorization": f"Bearer {token}"})
 
     data = response.json()
 
@@ -416,8 +453,8 @@ def test_login_success(client):
 
     response = client.post(
         "/api/v1/auth/login",
-        json={
-            "email": "login@test.com",
+        data={
+            "username": "login@test.com",
             "password": "password123",
         }
     )
@@ -439,10 +476,15 @@ def test_login_wrong_password(client):
 
     response = client.post(
         "/api/v1/auth/login",
-        json={
-            "email": "login@test.com",
+        data={
+            "username": "login@test.com",
             "password": "wrongpassword",
         }
     )
+
+    assert response.status_code == 401
+
+def test_students_requires_auth(client):
+    response = client.get("/api/v1/students")
 
     assert response.status_code == 401

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 
 from app.core.deps import get_user_service
 from app.schemas.auth import UserResponse, UserCreateRequest, TokenResponse, UserLoginRequest
@@ -26,7 +27,11 @@ async def create_user(
     response_model=TokenResponse
 )
 async def login(
-    body: UserLoginRequest,
+    form_data: OAuth2PasswordRequestForm = Depends(),
     service: UserService = Depends(get_user_service)
 ):
+    body = UserLoginRequest(
+        email=form_data.username,
+        password=form_data.password,
+    )
     return service.login(body)
