@@ -566,3 +566,16 @@ def test_invoice_preview_requires_auth(client):
                            )
 
     assert response.status_code == 401
+
+def test_inactive_user(client, db_session):
+    token = get_auth_token(client)
+    user_repo = SqlAlchemyUserRepository(db_session)
+    user_repo.update_user_active_status("test@test.com", False)
+    response = client.get("/api/v1/students", headers={"Authorization": f"Bearer {token}"})
+
+    assert response.status_code == 403
+
+def test_invalid_token(client):
+    response = client.get("/api/v1/students", headers={"Authorization": f"Bearer invalid_token"})
+
+    assert response.status_code == 401

@@ -3,11 +3,15 @@ from sqlalchemy.orm import Session
 from app.db.models import UserDB
 from app.schemas.auth import User
 
+
 class UserRepository:
     def get_user_by_email(self, email: str) -> User | None:
         raise NotImplementedError
 
     def create_user(self, user: User):
+        raise NotImplementedError
+
+    def update_user_active_status(self, email: str, is_active: bool):
         raise NotImplementedError
 
 class InMemoryUserRepository(UserRepository):
@@ -35,6 +39,17 @@ class InMemoryUserRepository(UserRepository):
                 is_active=True,
             )
         )
+
+    def update_user_active_status(self, email: str, is_active: bool) -> None:
+        for i, existing in enumerate(self.users):
+            if existing.email == email:
+                self.users[i] = User(
+                    email=existing.email,
+                    password=existing.password,
+                    is_active=is_active,
+                )
+                return
+        raise ValueError("User not found")
 
 class SqlAlchemyUserRepository(UserRepository):
 
@@ -65,3 +80,17 @@ class SqlAlchemyUserRepository(UserRepository):
         self.db.add(db_user)
         self.db.commit()
         self.db.refresh(db_user)
+
+    def update_user_active_status(self, email: str, is_active: bool) -> None:
+        row = (
+            self.db.query(UserDB)
+            .filter(UserDB.email == email)
+            .first()
+        )
+        if row is None:
+            raise ValueError("User not found")
+
+        row.is_active = is_active
+
+        self.db.commit()
+        self.db.refresh(row)

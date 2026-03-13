@@ -30,7 +30,7 @@ async def create_user(
 async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     service: UserService = Depends(get_user_service)
-):
+) -> TokenResponse:
     body = UserLoginRequest(
         email=form_data.username,
         password=form_data.password,
