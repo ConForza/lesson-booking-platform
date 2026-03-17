@@ -628,3 +628,110 @@ def test_schedule_lesson_conflict(client):
 
     assert response2.status_code == 400
     assert data == {"detail": "Lesson conflict: student already has a lesson at this time"}
+
+def test_get_lessons(client):
+    token = get_auth_token(client)
+
+    response = client.get(
+        "/api/v1/lessons",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+def test_get_lessons_by_student(client):
+    token = get_auth_token(client)
+
+    response = client.get(
+        "/api/v1/lessons?student_email=joe@bloggs.com",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+
+    data = response.json()
+
+    assert all(l["student_email"] == "joe@bloggs.com" for l in data)
+
+def test_get_lessons_by_dates(client):
+    token = get_auth_token(client)
+
+    response = client.get(
+        "/api/v1/lessons?date_from=06-01-26&date_to=15-01-26",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+
+    data = response.json()
+
+    assert len(data) == 2
+
+def test_lessons_order_by_date(client):
+    token = get_auth_token(client)
+
+    response = client.get(
+        "/api/v1/lessons",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+
+    data = response.json()
+
+    assert data[0]["id"] == 1
+    assert data[2]["id"] == 4
+
+def test_lessons_limit(client):
+    token = get_auth_token(client)
+
+    response = client.get(
+        "/api/v1/lessons?limit=2",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+
+    data = response.json()
+
+    assert len(data) == 2
+
+def test_lessons_offset(client):
+    token = get_auth_token(client)
+
+    response = client.get(
+        "/api/v1/lessons?offset=1",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+
+    data = response.json()
+
+    assert len(data) == 3
+    assert data[0]["id"] == 2
+    assert data[2]["id"] == 3
+
+def test_lessons_date_from_greater_than_date_to(client):
+    token = get_auth_token(client)
+
+    response = client.get(
+        "/api/v1/lessons?date_from=02-01-26&date_to=01-01-26",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {"detail": "date_from must be earlier than date_to"}
+
+def test_lessons_invalid_date_from(client):
+    token = get_auth_token(client)
+
+    response = client.get(
+        "/api/v1/lessons?date_from=invalid",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {"detail": "date_from must be in format DD-MM-YY"}
+
+def test_lessons_invalid_date_to(client):
+    token = get_auth_token(client)
+
+    response = client.get(
+        "/api/v1/lessons?date_to=invalid",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {"detail": "date_to must be in format DD-MM-YY"}

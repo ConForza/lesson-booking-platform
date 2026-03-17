@@ -10,7 +10,7 @@ class LessonService:
         self.lesson_repo = lesson_repo
 
     def schedule_lesson(self, body: LessonCreateRequest) -> LessonResponse:
-        lessons = self.lesson_repo.get_lessons_for_student(body.student_email, body.instrument)
+        lessons = self.lesson_repo.get_lessons(body.student_email, body.instrument)
         dt = datetime.strptime(body.date, "%d-%m-%y %H:%M")
 
         for lesson in lessons:
@@ -25,4 +25,19 @@ class LessonService:
         )
 
         return lesson
+
+    def get_lessons(self, student_email, instrument, date_from, date_to, offset, limit):
+
+        if date_from is not None and date_to is not None:
+            if date_from >= date_to:
+                raise DomainError("date_from must be earlier than date_to")
+
+        return self.lesson_repo.get_lessons(
+            student_email,
+            instrument,
+            date_from,
+            date_to,
+            offset,
+            limit
+        )
 

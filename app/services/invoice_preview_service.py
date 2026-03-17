@@ -10,7 +10,7 @@ class InvoicePreviewService:
             date_from = body.date_from
             date_to = body.date_to
         except ValueError:
-            raise DomainError("Dates must be in the format YYYY-MM-DD")
+            raise DomainError("Dates must be in the format DD-MM-YY")
 
         if date_from > date_to:
             raise DomainError("date_to must not be before date_from")

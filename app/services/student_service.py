@@ -25,7 +25,7 @@ class StudentService:
         if body.instrument.lower().strip() != "piano":
             raise DomainError("Instrument is not supported")
 
-        lessons = self.lesson_repo.get_lessons_for_student(body.student_email, body.instrument)
+        lessons = self.lesson_repo.get_lessons(body.student_email, body.instrument)
         lessons_30 = [l for l in lessons if l.duration == 30]
         lessons_60 = [l for l in lessons if l.duration == 60]
 

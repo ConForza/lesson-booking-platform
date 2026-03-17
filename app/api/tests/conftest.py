@@ -71,7 +71,7 @@ def setup_database():
             LessonDB(
                 student_email="joe@bloggs.com",
                 instrument="piano",
-                datetime=datetime(2026, 1, 28, 19, 30),
+                datetime=datetime(2026, 2, 23, 19, 30),
                 duration=30,
             )
         )
@@ -79,7 +79,7 @@ def setup_database():
             LessonDB(
                 student_email="some@person.com",
                 instrument="violin",
-                datetime=datetime(2026, 2, 23, 18, 30),
+                datetime=datetime(2026, 1, 28, 18, 30),
                 duration=30,
             )
         )

@@ -7,7 +7,14 @@ from datetime import datetime
 
 class LessonRepository:
 
-    def get_lessons_for_student(self, student_email: str, instrument: str) -> list[LessonResponse]:
+    def get_lessons(self,
+                    student_email: str | None = None,
+                    instrument: str | None = None,
+                    date_from: datetime | None = None,
+                    date_to: datetime | None = None,
+                    offset: int | None = None,
+                    limit: int | None = None
+                    ) -> list[LessonResponse]:
         raise NotImplementedError
 
     def create_lesson(self, student_email, instrument, dt, duration):
@@ -55,9 +62,38 @@ class InMemoryLessonRepository(LessonRepository):
             )
         ]
 
-    def get_lessons_for_student(self, student_email: str, instrument: str) -> list[LessonResponse]:
-        return [l for l in self.lessons if
-                student_email == l.student_email and instrument == l.instrument]
+    def get_lessons(self,
+                    student_email: str | None = None,
+                    instrument: str | None = None,
+                    date_from: datetime | None = None,
+                    date_to: datetime | None = None,
+                    offset: int | None = None,
+                    limit: int | None = None
+                    ) -> list[LessonResponse]:
+        results = self.lessons
+
+        if student_email:
+            results = [l for l in results if l.student_email == student_email]
+
+        if instrument:
+            results = [l for l in results if l.instrument == instrument]
+
+        if date_from:
+            results = [l for l in results if l.datetime >= date_from]
+
+        if date_to:
+            results = [l for l in results if l.datetime < date_to]
+
+        results = sorted(results, key=lambda l: l.datetime)
+
+        if offset is not None and limit is not None:
+            results = results[offset:offset + limit]
+        elif offset is not None:
+            results = results[offset:]
+        elif limit is not None:
+            results = results[:limit]
+
+        return results
 
     def create_lesson(self, student_email, instrument, dt, duration):
         id = self.lessons[-1].id + 1 if self.lessons is not None else 1
@@ -76,10 +112,40 @@ class SqlAlchemyLessonRepository(LessonRepository):
     def __init__(self, db: Session):
         self.db = db
 
-    def get_lessons_for_student(self, student_email: str, instrument: str) -> list[LessonResponse]:
+    def get_lessons(self,
+                    student_email: str | None = None,
+                    instrument: str | None = None,
+                    date_from: datetime | None = None,
+                    date_to: datetime | None = None,
+                    offset: int | None = None,
+                    limit: int | None = None
+                    ) -> list[LessonResponse]:
+
         lessons = []
-        rows = (self.db.query(LessonDB)
-                .filter(LessonDB.student_email == student_email, LessonDB.instrument == instrument))
+        query = self.db.query(LessonDB)
+
+        if student_email:
+            query = query.filter(LessonDB.student_email == student_email)
+
+        if instrument:
+            query = query.filter(LessonDB.instrument == instrument)
+
+        if date_from:
+            query = query.filter(LessonDB.datetime >= date_from)
+
+        if date_to:
+            query = query.filter(LessonDB.datetime < date_to)
+
+        query = query.order_by(LessonDB.datetime.asc())
+
+        if offset is not None:
+            query = query.offset(offset)
+
+        if limit is not None:
+            query = query.limit(limit)
+
+        rows = query.all()
+
         for row in rows:
             lessons.append(
                 LessonResponse(
