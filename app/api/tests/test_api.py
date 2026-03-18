@@ -627,7 +627,7 @@ def test_schedule_lesson_conflict(client):
     data = response2.json()
 
     assert response2.status_code == 400
-    assert data == {"detail": "Lesson conflict: student already has a lesson at this time"}
+    assert data == {"detail": "Lesson conflict: overlapping lesson exists"}
 
 def test_get_lessons(client):
     token = get_auth_token(client)
@@ -735,3 +735,94 @@ def test_lessons_invalid_date_to(client):
 
     assert response.status_code == 400
     assert response.json() == {"detail": "date_to must be in format DD-MM-YY"}
+
+def test_lesson_overlap_partial(client):
+    token = get_auth_token(client)
+    response = client.post("/api/v1/lessons", json=
+    {
+        "student_email": "joe@bloggs.com",
+        "instrument": "piano",
+        "date": "20-03-26 14:00",
+        "duration": 60,
+    },
+                           headers={"Authorization": f"Bearer {token}"})
+
+    assert response.status_code == 201
+
+    response2 = client.post("/api/v1/lessons", json=
+    {
+        "student_email": "joe@bloggs.com",
+        "instrument": "piano",
+        "date": "20-03-26 14:30",
+        "duration": 30,
+    },
+                            headers={"Authorization": f"Bearer {token}"})
+    data = response2.json()
+
+    assert response2.status_code == 400
+    assert data == {"detail": "Lesson conflict: overlapping lesson exists"}
+
+def test_lesson_overlap_inside(client):
+    token = get_auth_token(client)
+    response = client.post("/api/v1/lessons", json=
+    {
+        "student_email": "joe@bloggs.com",
+        "instrument": "piano",
+        "date": "20-03-26 14:00",
+        "duration": 60,
+    },
+                           headers={"Authorization": f"Bearer {token}"})
+
+    assert response.status_code == 201
+
+    response2 = client.post("/api/v1/lessons", json=
+    {
+        "student_email": "joe@bloggs.com",
+        "instrument": "piano",
+        "date": "20-03-26 14:10",
+        "duration": 30,
+    },
+                            headers={"Authorization": f"Bearer {token}"})
+    data = response2.json()
+
+    assert response2.status_code == 400
+    assert data == {"detail": "Lesson conflict: overlapping lesson exists"}
+
+def test_lesson_no_overlap_edge(client):
+    token = get_auth_token(client)
+    response = client.post("/api/v1/lessons", json=
+    {
+        "student_email": "joe@bloggs.com",
+        "instrument": "piano",
+        "date": "20-03-26 14:00",
+        "duration": 60,
+    },
+                           headers={"Authorization": f"Bearer {token}"})
+
+    assert response.status_code == 201
+
+    response2 = client.post("/api/v1/lessons", json=
+    {
+        "student_email": "joe@bloggs.com",
+        "instrument": "piano",
+        "date": "20-03-26 15:00",
+        "duration": 30,
+    },
+                            headers={"Authorization": f"Bearer {token}"})
+
+    assert response2.status_code == 201
+
+def test_lesson_invalid_duration(client):
+    token = get_auth_token(client)
+    response = client.post("/api/v1/lessons", json=
+    {
+        "student_email": "joe@bloggs.com",
+        "instrument": "piano",
+        "date": "20-03-26 14:00",
+        "duration": 20,
+    },
+                           headers={"Authorization": f"Bearer {token}"})
+
+
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Invalid duration: must be 30 or 60"}

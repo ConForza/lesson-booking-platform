@@ -18,7 +18,8 @@ def parse_date(date_str: str, field_name: str) -> datetime:
 @lessons_router.post("/lessons",
                      response_model=LessonResponse, status_code=201,
                      description="Creates a lesson for the given student according to instrument and time."
-                                 "Time must be in the format DD-MM-YY HH:MM.")
+                                 "Time must be in the format DD-MM-YY HH:MM."
+                                 "Duration must be 30 or 60.")
 async def create_lesson(
     body: LessonCreateRequest,
     service: LessonService = Depends(get_lesson_service),
