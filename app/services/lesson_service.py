@@ -9,22 +9,38 @@ class LessonService:
     def __init__(self, lesson_repo: LessonRepository):
         self.lesson_repo = lesson_repo
 
-    def schedule_lesson(self, body: LessonCreateRequest) -> LessonResponse:
-        lessons = self.lesson_repo.get_lessons(body.student_email, body.instrument)
-
-        if body.duration not in (30, 60):
-            raise DomainError("Invalid duration: must be 30 or 60")
-
-        dt = datetime.strptime(body.date, "%d-%m-%y %H:%M")
-        new_start = dt
-        new_end = dt + timedelta(minutes=body.duration)
-
+    def _has_overlap(self, lessons, new_start, new_end):
         for lesson in lessons:
             existing_start = lesson.datetime
             existing_end = lesson.datetime + timedelta(minutes=lesson.duration)
 
             if new_start < existing_end and new_end > existing_start:
-                raise DomainError("Lesson conflict: overlapping lesson exists")
+                return True
+        return False
+
+    def _validate_duration(self, duration: int):
+        if duration not in (30, 60):
+            raise DomainError("Invalid duration: must be 30 or 60")
+
+    def _parse_datetime(self, date: str):
+        try:
+            return datetime.strptime(date, "%d-%m-%y %H:%M")
+        except ValueError:
+            raise DomainError("date must be in format DD-MM-YY HH:MM")
+
+    def _calculate_time_window(self, dt, duration: int):
+        return dt, dt + timedelta(minutes=duration)
+
+    def schedule_lesson(self, body: LessonCreateRequest) -> LessonResponse:
+        lessons = self.lesson_repo.get_lessons(body.student_email, body.instrument)
+
+        self._validate_duration(body.duration)
+
+        dt = self._parse_datetime(body.date)
+        new_start, new_end = self._calculate_time_window(dt, body.duration)
+
+        if self._has_overlap(lessons, new_start, new_end):
+            raise DomainError("Lesson conflict: overlapping lesson exists")
 
         lesson = self.lesson_repo.create_lesson(
             body.student_email,
@@ -35,7 +51,7 @@ class LessonService:
 
         return lesson
 
-    def get_lessons(self, student_email, instrument, date_from, date_to, offset, limit):
+    def get_lessons(self, student_email, instrument, date_from, date_to, offset, limit) -> list[LessonResponse]:
 
         if date_from is not None and date_to is not None:
             if date_from >= date_to:
@@ -49,4 +65,3 @@ class LessonService:
             offset,
             limit
         )
-
