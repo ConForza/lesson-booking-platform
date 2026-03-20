@@ -1,5 +1,5 @@
 from app.repositories.lesson_repository import LessonRepository
-from app.schemas.lesson import LessonCreateRequest, LessonResponse
+from app.schemas.lesson import LessonCreateRequest, LessonResponse, LessonUpdateRequest
 from datetime import datetime, timedelta
 from app.core.exceptions import DomainError
 
@@ -65,3 +65,23 @@ class LessonService:
             offset,
             limit
         )
+
+    def update_lesson(self, lesson_id: int, body: LessonUpdateRequest) -> LessonResponse:
+        existing_lesson = self.lesson_repo.get_lesson_by_id(lesson_id)
+        if not existing_lesson:
+            raise DomainError("Lesson not found", status_code=404)
+
+        self._validate_duration(body.duration)
+        dt = self._parse_datetime(body.date)
+        new_start, new_end = self._calculate_time_window(dt, body.duration)
+        other_lessons = [l for l in self.get_lessons(
+            existing_lesson.student_email, body.instrument, None, None, None, None
+        ) if l.id != existing_lesson.id]
+        if self._has_overlap(other_lessons, new_start, new_end):
+            raise DomainError("Lesson conflict: overlapping lesson exists")
+
+        return self.lesson_repo.update_lesson(lesson_id, body.instrument, dt, body.duration)
+
+    def get_lesson(self, lesson_id):
+        return self.lesson_repo.get_lesson_by_id(lesson_id)
+

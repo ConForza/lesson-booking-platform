@@ -20,6 +20,11 @@ class LessonRepository:
     def create_lesson(self, student_email, instrument, dt, duration):
         raise NotImplementedError
 
+    def get_lesson_by_id(self, lesson_id: int) -> LessonResponse | None:
+        raise NotImplementedError
+
+    def update_lesson(self, lesson_id: int, instrument: str, dt: datetime, duration: int) -> LessonResponse:
+        raise NotImplementedError
 
 class InMemoryLessonRepository(LessonRepository):
 
@@ -107,6 +112,21 @@ class InMemoryLessonRepository(LessonRepository):
         self.lessons.append(lesson)
         return lesson
 
+    def get_lesson_by_id(self, lesson_id: int) -> LessonResponse | None:
+        for lesson in self.lessons:
+            if lesson.id == lesson_id:
+                return lesson
+        return None
+
+    def update_lesson(self, lesson_id: int, instrument: str, dt: datetime, duration: int) -> LessonResponse:
+        for index, lesson in enumerate(self.lessons):
+            if lesson.id == lesson_id:
+                self.lessons[index].instrument = instrument
+                self.lessons[index].datetime = dt
+                self.lessons[index].duration = duration
+                return self.lessons[index]
+
+
 class SqlAlchemyLessonRepository(LessonRepository):
 
     def __init__(self, db: Session):
@@ -176,4 +196,37 @@ class SqlAlchemyLessonRepository(LessonRepository):
             instrument=db_lesson.instrument,
             datetime=db_lesson.datetime,
             duration=db_lesson.duration,
+        )
+
+    def get_lesson_by_id(self, lesson_id: int) -> LessonResponse | None:
+        row = self.db.query(LessonDB).filter(LessonDB.id == lesson_id).first()
+
+        if row:
+            return LessonResponse(
+                id=row.id,
+                student_email=row.student_email,
+                instrument=row.instrument,
+                datetime=row.datetime,
+                duration=row.duration
+            )
+        return None
+
+    def update_lesson(self, lesson_id: int, instrument: str, dt: datetime, duration: int) -> LessonResponse:
+        row = (
+            self.db.query(LessonDB)
+            .filter(LessonDB.id == lesson_id)
+            .first()
+        )
+        row.instrument = instrument
+        row.datetime = dt
+        row.duration = duration
+
+        self.db.commit()
+        self.db.refresh(row)
+        return LessonResponse(
+            id=row.id,
+            student_email=row.student_email,
+            instrument=row.instrument,
+            datetime=row.datetime,
+            duration=row.duration
         )

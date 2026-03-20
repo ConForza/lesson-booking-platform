@@ -1,5 +1,6 @@
 from app.core.security import verify_password
 from app.repositories.user_repository import SqlAlchemyUserRepository
+from datetime import datetime
 
 
 def get_auth_token(client):
@@ -826,3 +827,61 @@ def test_lesson_invalid_duration(client):
 
     assert response.status_code == 400
     assert response.json() == {"detail": "Invalid duration: must be 30 or 60"}
+
+def test_lesson_update(client):
+    token = get_auth_token(client)
+    response = client.put("/api/v1/lessons/1", json=
+    {
+        "date": "07-01-26 13:00",
+        "duration": 60,
+        "instrument": "piano",
+    },
+                            headers={"Authorization": f"Bearer {token}"})
+
+    data = response.json()
+    assert response.status_code == 200
+    assert data["id"] == 1
+    assert data["datetime"] == "2026-01-07T13:00:00"
+    assert data["duration"] == 60
+
+def test_nonexisting_lesson_update(client):
+    token = get_auth_token(client)
+    response = client.put("/api/v1/lessons/6", json=
+    {
+        "date": "07-01-26 13:00",
+        "duration": 60,
+        "instrument": "piano",
+    },
+                          headers={"Authorization": f"Bearer {token}"})
+
+    data = response.json()
+    assert response.status_code == 404
+    assert data["detail"] == "Lesson not found"
+
+def test_lesson_update_clash(client):
+    token = get_auth_token(client)
+    response = client.put("/api/v1/lessons/1", json=
+    {
+        "date": "15-01-26 17:00",
+        "duration": 60,
+        "instrument": "piano",
+    },
+                          headers={"Authorization": f"Bearer {token}"})
+
+    data = response.json()
+    assert response.status_code == 400
+    assert data["detail"] == "Lesson conflict: overlapping lesson exists"
+
+def test_lesson_update_invalid_duration(client):
+    token = get_auth_token(client)
+    response = client.put("/api/v1/lessons/1", json=
+    {
+        "date": "15-05-26 17:00",
+        "duration": 15,
+        "instrument": "piano",
+    },
+                          headers={"Authorization": f"Bearer {token}"})
+
+    data = response.json()
+    assert response.status_code == 400
+    assert data["detail"] == "Invalid duration: must be 30 or 60"

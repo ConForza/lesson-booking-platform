@@ -25,3 +25,8 @@ class LessonResponse(BaseModel):
     instrument: str
     datetime: datetime
     duration: int
+
+class LessonUpdateRequest(BaseModel):
+    date: str
+    duration: int
+    instrument: str
