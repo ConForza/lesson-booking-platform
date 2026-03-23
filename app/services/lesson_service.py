@@ -57,7 +57,7 @@ class LessonService:
             if date_from >= date_to:
                 raise DomainError("date_from must be earlier than date_to")
 
-        return self.lesson_repo.get_lessons(
+        lessons = self.lesson_repo.get_lessons(
             student_email,
             instrument,
             date_from,
@@ -65,6 +65,8 @@ class LessonService:
             offset,
             limit
         )
+
+        return lessons
 
     def update_lesson(self, lesson_id: int, body: LessonUpdateRequest) -> LessonResponse:
         existing_lesson = self.lesson_repo.get_lesson_by_id(lesson_id)
@@ -74,7 +76,7 @@ class LessonService:
         self._validate_duration(body.duration)
         dt = self._parse_datetime(body.date)
         new_start, new_end = self._calculate_time_window(dt, body.duration)
-        other_lessons = [l for l in self.get_lessons(
+        other_lessons = [l for l in self.lesson_repo.get_lessons(
             existing_lesson.student_email, body.instrument, None, None, None, None
         ) if l.id != existing_lesson.id]
         if self._has_overlap(other_lessons, new_start, new_end):
@@ -83,5 +85,9 @@ class LessonService:
         return self.lesson_repo.update_lesson(lesson_id, body.instrument, dt, body.duration)
 
     def get_lesson(self, lesson_id):
-        return self.lesson_repo.get_lesson_by_id(lesson_id)
+        lesson = self.lesson_repo.get_lesson_by_id(lesson_id)
+        if not lesson:
+            raise DomainError("Lesson not found", status_code=404)
+        return lesson
+
 

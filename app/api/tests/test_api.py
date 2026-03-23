@@ -1,6 +1,5 @@
 from app.core.security import verify_password
 from app.repositories.user_repository import SqlAlchemyUserRepository
-from datetime import datetime
 
 
 def get_auth_token(client):

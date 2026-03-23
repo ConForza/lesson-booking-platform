@@ -26,6 +26,10 @@ class StudentService:
             raise DomainError("Instrument is not supported")
 
         lessons = self.lesson_repo.get_lessons(body.student_email, body.instrument)
+
+        if not lessons:
+            raise DomainError("No lessons found", status_code=404)
+
         lessons_30 = [l for l in lessons if l.duration == 30]
         lessons_60 = [l for l in lessons if l.duration == 60]
 
@@ -61,6 +65,7 @@ class StudentService:
 
     def list_students(self, instrument: str | None = None) -> list[StudentResponse] | None:
         students = self.student_repo.list_students(instrument)
+
         return [self.construct_student_response(student) for student in students]
 
     def delete_student(self, body: StudentRequest) -> None:
