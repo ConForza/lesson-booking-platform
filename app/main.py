@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
@@ -14,6 +16,11 @@ from fastapi import Depends
 Base.metadata.create_all(bind=engine)
 
 settings = get_settings()
+logging.basicConfig(
+    filename="app.log",
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s %(message)s"
+)
 
 tags_metadata = [
     {"name": "system",

@@ -1,8 +1,12 @@
+import logging
+
 from app.core.exceptions import DomainError
 from app.repositories.user_repository import UserRepository
 from app.schemas.auth import UserCreateRequest, UserLoginRequest, User, UserResponse
 from app.core.security import hash_password, verify_password
 from app.core.jwt import create_access_token
+
+logger = logging.getLogger(__name__)
 
 class UserService:
 
@@ -11,12 +15,15 @@ class UserService:
 
     def create_user(self, body: UserCreateRequest) -> UserResponse:
         if body.email.strip() == "":
+            logger.warning("Blank email input for user creation")
             raise DomainError("Email must not be left blank")
 
         if self.user_repo.get_user_by_email(body.email) is not None:
+            logger.warning("User already exists for creation with email %s", body.email)
             raise DomainError("User already exists", status_code=400)
 
         if len(body.password) < 8:
+            logger.warning("Password input was too short")
             raise DomainError("Password must be at least 8 characters")
 
         user = User(
@@ -25,6 +32,7 @@ class UserService:
             is_active=True,
         )
 
+        logger.info("User created with email %s", body.email)
         self.user_repo.create_user(user)
 
         return UserResponse(
@@ -37,15 +45,18 @@ class UserService:
         user = self.user_repo.get_user_by_email(body.email)
 
         if user is None:
-            raise DomainError("Invalid email or password", status_code=401)
+            logger.warning("Invalid login attempt for email %s", body.email)
+            raise DomainError("Invalid email entered", status_code=401)
 
         if not verify_password(body.password, user.password):
-            raise DomainError("Invalid email or password", status_code=401)
+            logger.warning("Invalid login attempt for email %s", body.email)
+            raise DomainError("Invalid password entered", status_code=401)
 
         token = create_access_token(
             data={"sub": user.email}
         )
 
+        logger.info("User successfully logged in with email %s", body.email)
         return {
             "access_token": token,
             "token_type": "bearer"

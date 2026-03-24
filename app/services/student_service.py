@@ -1,9 +1,11 @@
+import logging
 from app.core.exceptions import DomainError
 from app.repositories.lesson_repository import LessonRepository
 from app.repositories.student_repository import StudentRepository
-from app.schemas.remaining_lessons import RemainingLessonsResponse, RemainingLessonsRequest, Lesson
-from app.schemas.student import StudentRequest, StudentResponse, CreateStudentRequest, UpdateStudentRequest, Student
+from app.schemas.remaining_lessons import RemainingLessonsResponse, RemainingLessonsRequest
+from app.schemas.student import StudentRequest, StudentResponse, CreateStudentRequest, UpdateStudentRequest
 
+logger = logging.getLogger(__name__)
 
 class StudentService:
 
@@ -28,6 +30,7 @@ class StudentService:
         lessons = self.lesson_repo.get_lessons(body.student_email, body.instrument)
 
         if not lessons:
+            logger.warning("No lessons found for %s (%s)", body.student_email, body.instrument)
             raise DomainError("No lessons found", status_code=404)
 
         lessons_30 = [l for l in lessons if l.duration == 30]
@@ -42,6 +45,7 @@ class StudentService:
 
     def get_student(self, body: StudentRequest) -> StudentResponse | None:
         if body.student_email.strip() == "":
+            logger.warning("Blank student email input")
             raise DomainError("student_email must not be left blank")
 
         student = self.student_repo.get_student_by_email(body.student_email)
@@ -49,18 +53,22 @@ class StudentService:
         if student is not None:
             return self.construct_student_response(student)
         else:
+            logger.warning("Student not found with email %s", body.student_email)
             raise DomainError("Student not found", status_code=404)
 
     def create_student(self, body: CreateStudentRequest) -> StudentResponse:
         if body.student_email.strip() == "":
+            logger.warning("Blank student email input for creation")
             raise DomainError("student_email must not be left blank")
 
         if self.student_repo.get_student_by_email(body.student_email) is not None:
+            logger.warning("Cannot create student with email %s: student already exists", body.student_email)
             raise DomainError("Student already exists", status_code=400)
         else:
             student = self.construct_student_response(body)
 
             self.student_repo.create_student(student)
+            logger.info("Student created with email %s", body.student_email)
             return student
 
     def list_students(self, instrument: str | None = None) -> list[StudentResponse] | None:
@@ -70,19 +78,24 @@ class StudentService:
 
     def delete_student(self, body: StudentRequest) -> None:
         if body.student_email.strip() == "":
+            logger.warning("Blank student email input for deletion")
             raise DomainError("student_email must not be left blank")
 
         if self.student_repo.get_student_by_email(body.student_email) is None:
+            logger.warning("Student not found with email %s", body.student_email)
             raise DomainError("Student not found", status_code=404)
 
         self.student_repo.delete_student(body.student_email)
+        logger.info("Student deleted with email %s", body.student_email)
 
     def update_student(self, email: str, body: UpdateStudentRequest) -> StudentResponse:
         if email.strip() == "":
+            logger.warning("Blank student email input for update")
             raise DomainError("student_email must not be left blank")
 
         existing = self.student_repo.get_student_by_email(email)
         if existing is None:
+            logger.warning("Student not found with email %s", email)
             raise DomainError("Student not found", status_code=404)
 
         updated = StudentResponse(
@@ -93,4 +106,5 @@ class StudentService:
         )
 
         self.student_repo.update_student(email, updated)
+        logger.info("Student updated with email %s", email)
         return updated
