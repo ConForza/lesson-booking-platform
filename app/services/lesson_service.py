@@ -45,7 +45,7 @@ class LessonService:
         new_start, new_end = self._calculate_time_window(dt, body.duration)
 
         if self._has_overlap(lessons, new_start, new_end):
-            logger.warning("Overlapping lessons detected")
+            logger.warning("Lesson conflict: overlapping lesson exists")
             raise DomainError("Lesson conflict: overlapping lesson exists")
 
         lesson = self.lesson_repo.create_lesson(
@@ -62,7 +62,7 @@ class LessonService:
 
         if date_from is not None and date_to is not None:
             if date_from >= date_to:
-                logger.warning("Invalid date entries")
+                logger.warning("Invalid lesson date range")
                 raise DomainError("date_from must be earlier than date_to")
 
         lessons = self.lesson_repo.get_lessons(
@@ -89,13 +89,13 @@ class LessonService:
             existing_lesson.student_email, body.instrument, None, None, None, None
         ) if l.id != existing_lesson.id]
         if self._has_overlap(other_lessons, new_start, new_end):
-            logger.warning("Overlapping lessons detected")
+            logger.warning("Lesson conflict: overlapping lesson exists")
             raise DomainError("Lesson conflict: overlapping lesson exists")
 
         logger.info("Lesson updated for %s (%s)",existing_lesson.student_email, body.instrument)
         return self.lesson_repo.update_lesson(lesson_id, body.instrument, dt, body.duration)
 
-    def get_lesson(self, lesson_id):
+    def get_lesson(self, lesson_id) -> LessonResponse:
         lesson = self.lesson_repo.get_lesson_by_id(lesson_id)
         if not lesson:
             logger.warning("No lesson found for id %s", lesson_id)

@@ -43,7 +43,7 @@ class StudentService:
             lessons_60=len(lessons_60),
         )
 
-    def get_student(self, body: StudentRequest) -> StudentResponse | None:
+    def get_student(self, body: StudentRequest) -> StudentResponse:
         if body.student_email.strip() == "":
             logger.warning("Blank student email input")
             raise DomainError("student_email must not be left blank")
@@ -58,7 +58,7 @@ class StudentService:
 
     def create_student(self, body: CreateStudentRequest) -> StudentResponse:
         if body.student_email.strip() == "":
-            logger.warning("Blank student email input for creation")
+            logger.warning("Blank student email input")
             raise DomainError("student_email must not be left blank")
 
         if self.student_repo.get_student_by_email(body.student_email) is not None:
@@ -71,14 +71,14 @@ class StudentService:
             logger.info("Student created with email %s", body.student_email)
             return student
 
-    def list_students(self, instrument: str | None = None) -> list[StudentResponse] | None:
+    def list_students(self, instrument: str | None = None) -> list[StudentResponse]:
         students = self.student_repo.list_students(instrument)
 
         return [self.construct_student_response(student) for student in students]
 
     def delete_student(self, body: StudentRequest) -> None:
         if body.student_email.strip() == "":
-            logger.warning("Blank student email input for deletion")
+            logger.warning("Blank student email input")
             raise DomainError("student_email must not be left blank")
 
         if self.student_repo.get_student_by_email(body.student_email) is None:
@@ -90,7 +90,7 @@ class StudentService:
 
     def update_student(self, email: str, body: UpdateStudentRequest) -> StudentResponse:
         if email.strip() == "":
-            logger.warning("Blank student email input for update")
+            logger.warning("Blank student email input")
             raise DomainError("student_email must not be left blank")
 
         existing = self.student_repo.get_student_by_email(email)

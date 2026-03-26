@@ -15,7 +15,7 @@ class UserService:
 
     def create_user(self, body: UserCreateRequest) -> UserResponse:
         if body.email.strip() == "":
-            logger.warning("Blank email input for user creation")
+            logger.warning("Blank email input")
             raise DomainError("Email must not be left blank")
 
         if self.user_repo.get_user_by_email(body.email) is not None:

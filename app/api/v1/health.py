@@ -6,7 +6,8 @@ health_router = APIRouter(tags=["system"])
 @health_router.get(
     "/health",
     summary="Health check",
-    description="Returns the current health status of the API service."
+    description="Returns the current health status of the API service.",
+    response_model=HealthResponse
 )
 async def health() -> HealthResponse:
     return HealthResponse(status="ok")

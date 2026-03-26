@@ -884,3 +884,12 @@ def test_lesson_update_invalid_duration(client):
     data = response.json()
     assert response.status_code == 400
     assert data["detail"] == "Invalid duration: must be 30 or 60"
+
+def test_unknown_lesson_id_and_unknown_student_have_same_response_structure(client):
+    token = get_auth_token(client)
+    response = client.get("/api/v1/lessons/9", headers={"Authorization": f"Bearer {token}"})
+    response2 = client.get("/api/v1/students/unknown@student.com", headers={"Authorization": f"Bearer {token}"})
+
+    assert response.status_code == response2.status_code
+    assert response.json()["detail"] == "Lesson not found"
+    assert response2.json()["detail"] == "Student not found"
