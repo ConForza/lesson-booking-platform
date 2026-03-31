@@ -3,3 +3,4 @@ pytest
 sqlalchemy
 pwdlib[argon2]
 pyjwt
+pytest-cov

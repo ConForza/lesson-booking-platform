@@ -17,6 +17,53 @@ def get_auth_token(client):
 
     return login.json()["access_token"]
 
+def invoice_preview_payload(
+    staff_id=1,
+    date_from="2025-02-26",
+    date_to="2026-02-26",
+    preview=True,
+):
+    return {
+        "staff_id": staff_id,
+        "date_from": date_from,
+        "date_to": date_to,
+        "preview": preview,
+    }
+
+def student_remaining_lessons_payload(
+    student_email="joe@bloggs.com",
+    instrument="piano",
+):
+    return {
+        "student_email": student_email,
+        "instrument": instrument,
+    }
+
+def student_payload(
+    student_email="another@student.com",
+    first_name="Another",
+    surname="Student",
+    instrument="piano",
+):
+    return {
+        "student_email": student_email,
+        "first_name": first_name,
+        "surname": surname,
+        "instrument": instrument,
+    }
+
+def lesson_payload(
+    student_email="joe@bloggs.com",
+    instrument="piano",
+    date="20-03-26 14:00",
+    duration=30,
+):
+    return {
+        "student_email": student_email,
+        "instrument": instrument,
+        "date": date,
+        "duration": duration,
+    }
 
 def test_health(client):
     response = client.get("/api/v1/health")
@@ -27,13 +74,7 @@ def test_health(client):
 
 def test_invoice_preview(client):
     token = get_auth_token(client)
-    response = client.post("/api/v1/invoices/preview", json=
-    {
-        "staff_id": 1,
-        "date_from": "2025-02-26",
-        "date_to": "2026-02-26",
-        "preview": True,
-    },
+    response = client.post("/api/v1/invoices/preview", json=invoice_preview_payload(),
                            headers={"Authorization": f"Bearer {token}"}
                            )
     assert response.status_code == 200
@@ -45,17 +86,10 @@ def test_invoice_preview(client):
     assert len(data["lessons"]) > 1
 
 
-def test_invalid_staff_id_in_invoice_preview(client):
+def test_invoice_preview_invalid_staff_id(client):
     token = get_auth_token(client)
-    response = client.post("/api/v1/invoices/preview", json=
-    {
-        "staff_id": 0,
-        "date_from": "2025-02-26",
-        "date_to": "2026-02-26",
-        "preview": True,
-    },
+    response = client.post("/api/v1/invoices/preview", json=invoice_preview_payload(staff_id=0),
                            headers={"Authorization": f"Bearer {token}"}
-
                            )
 
     data = response.json()
@@ -64,15 +98,9 @@ def test_invalid_staff_id_in_invoice_preview(client):
     assert data["detail"][0]["msg"] == "Input should be greater than 0"
 
 
-def test_blank_date_from_in_invoice_preview(client):
+def test_invoice_preview_blank_date_from(client):
     token = get_auth_token(client)
-    response = client.post("/api/v1/invoices/preview", json=
-    {
-        "staff_id": 1,
-        "date_from": "",
-        "date_to": "2026-02-26",
-        "preview": True,
-    },
+    response = client.post("/api/v1/invoices/preview", json=invoice_preview_payload(date_from=""),
                            headers={"Authorization": f"Bearer {token}"}
                            )
 
@@ -82,15 +110,9 @@ def test_blank_date_from_in_invoice_preview(client):
     assert data["detail"][0]["msg"] == "Input should be a valid date or datetime, input is too short"
 
 
-def test_blank_date_to_in_invoice_preview(client):
+def test_invoice_preview_blank_date_to(client):
     token = get_auth_token(client)
-    response = client.post("/api/v1/invoices/preview", json=
-    {
-        "staff_id": 1,
-        "date_from": "2026-02-26",
-        "date_to": "",
-        "preview": True,
-    },
+    response = client.post("/api/v1/invoices/preview", json=invoice_preview_payload(date_to=""),
                            headers={"Authorization": f"Bearer {token}"}
                            )
 
@@ -100,15 +122,9 @@ def test_blank_date_to_in_invoice_preview(client):
     assert data["detail"][0]["msg"] == "Input should be a valid date or datetime, input is too short"
 
 
-def test_date_from_greater_than_date_to(client):
+def test_invoice_preview_date_from_greater_than_date_to(client):
     token = get_auth_token(client)
-    response = client.post("/api/v1/invoices/preview", json=
-    {
-        "staff_id": 1,
-        "date_from": "2026-02-26",
-        "date_to": "2026-02-25",
-        "preview": True,
-    },
+    response = client.post("/api/v1/invoices/preview", json=invoice_preview_payload(date_from="2026-02-26", date_to="2026-02-25"),
                            headers={"Authorization": f"Bearer {token}"}
                            )
 
@@ -120,11 +136,7 @@ def test_date_from_greater_than_date_to(client):
 
 def test_students_remaining_lessons_blank_email(client):
     token = get_auth_token(client)
-    response = client.post("/api/v1/students/remaining-lessons", json=
-    {
-        "student_email": "",
-        "instrument": "piano",
-    },
+    response = client.post("/api/v1/students/remaining-lessons", json=student_remaining_lessons_payload(student_email=""),
                            headers={"Authorization": f"Bearer {token}"}
                            )
 
@@ -136,11 +148,7 @@ def test_students_remaining_lessons_blank_email(client):
 
 def test_students_remaining_lessons_invalid_instrument(client):
     token = get_auth_token(client)
-    response = client.post("/api/v1/students/remaining-lessons", json=
-    {
-        "student_email": "joe@bloggs.com",
-        "instrument": "trumpet",
-    },
+    response = client.post("/api/v1/students/remaining-lessons", json=student_remaining_lessons_payload(instrument="trumpet"),
                            headers={"Authorization": f"Bearer {token}"}
                            )
 
@@ -154,11 +162,7 @@ def test_students_remaining_lessons(client):
     token = get_auth_token(client)
     response = client.post(
         "/api/v1/students/remaining-lessons",
-        json=
-        {
-            "student_email": "joe@bloggs.com",
-            "instrument": "piano",
-        },
+        json=student_remaining_lessons_payload(),
         headers={"Authorization": f"Bearer {token}"}
     )
 
@@ -242,12 +246,7 @@ def test_create_student(client):
     token = get_auth_token(client)
     response = client.post(
         "/api/v1/students",
-        json={
-            "student_email": "another@student.com",
-            "first_name": "Another",
-            "surname": "Student",
-            "instrument": "piano",
-        },
+        json=student_payload(),
         headers={"Authorization": f"Bearer {token}"}
     )
 
@@ -264,12 +263,7 @@ def test_create_student_with_duplicate_email(client):
     token = get_auth_token(client)
     response = client.post(
         "/api/v1/students",
-        json={
-            "student_email": "joe@bloggs.com",
-            "first_name": "Joe",
-            "surname": "Bloggs",
-            "instrument": "piano",
-        },
+        json=student_payload(student_email="joe@bloggs.com", first_name="Joe", surname="Bloggs"),
         headers={"Authorization": f"Bearer {token}"}
     )
 
@@ -283,12 +277,7 @@ def test_create_student_and_fetch_all_students(client):
     token = get_auth_token(client)
     client.post(
         "/api/v1/students",
-        json={
-            "student_email": "another@student.com",
-            "first_name": "Another",
-            "surname": "Student",
-            "instrument": "piano",
-        },
+        json=student_payload(),
         headers={"Authorization": f"Bearer {token}"}
     )
 
@@ -420,12 +409,7 @@ def test_create_student_invalid_email(client):
     token = get_auth_token(client)
     response = client.post(
         "/api/v1/students",
-        json={
-            "student_email": "not_an_email",
-            "first_name": "Bad",
-            "surname": "Email",
-            "instrument": "piano",
-        },
+        json=student_payload(student_email="not_an_email", first_name="Bad", surname="Email"),
         headers={"Authorization": f"Bearer {token}"}
     )
 
@@ -544,25 +528,14 @@ def test_auth_me_requires_auth(client):
 def test_create_student_requires_auth(client):
     response = client.post(
         "/api/v1/students",
-        json={
-            "student_email": "test@test.com",
-            "first_name": "Test",
-            "surname": "User",
-            "instrument": "piano",
-        }
+        json=student_payload(student_email="test@test.com", first_name="Test", surname="User")
     )
 
     assert response.status_code == 401
 
 
 def test_invoice_preview_requires_auth(client):
-    response = client.post("/api/v1/invoices/preview", json=
-    {
-        "staff_id": 1,
-        "date_from": "2025-02-26",
-        "date_to": "2026-02-26",
-        "preview": True,
-    }
+    response = client.post("/api/v1/invoices/preview", json=invoice_preview_payload()
                            )
 
     assert response.status_code == 401
@@ -583,13 +556,7 @@ def test_invalid_token(client):
 
 def test_create_lesson(client):
     token = get_auth_token(client)
-    response = client.post("/api/v1/lessons", json=
-    {
-        "student_email": "joe@bloggs.com",
-        "instrument": "piano",
-        "date": "20-03-26 14:00",
-        "duration": 30,
-    },
+    response = client.post("/api/v1/lessons", json=lesson_payload(),
     headers={"Authorization": f"Bearer {token}"})
 
     data = response.json()
@@ -605,24 +572,12 @@ def test_create_lesson(client):
 
 def test_schedule_lesson_conflict(client):
     token = get_auth_token(client)
-    response = client.post("/api/v1/lessons", json=
-    {
-        "student_email": "joe@bloggs.com",
-        "instrument": "piano",
-        "date": "20-03-26 14:00",
-        "duration": 30,
-    },
+    response = client.post("/api/v1/lessons", json=lesson_payload(),
     headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 201
 
-    response2 = client.post("/api/v1/lessons", json=
-    {
-        "student_email": "joe@bloggs.com",
-        "instrument": "piano",
-        "date": "20-03-26 14:00",
-        "duration": 30,
-    },
+    response2 = client.post("/api/v1/lessons", json=lesson_payload(),
     headers={"Authorization": f"Bearer {token}"})
     data = response2.json()
 
@@ -738,24 +693,12 @@ def test_lessons_invalid_date_to(client):
 
 def test_lesson_overlap_partial(client):
     token = get_auth_token(client)
-    response = client.post("/api/v1/lessons", json=
-    {
-        "student_email": "joe@bloggs.com",
-        "instrument": "piano",
-        "date": "20-03-26 14:00",
-        "duration": 60,
-    },
+    response = client.post("/api/v1/lessons", json=lesson_payload(duration=60),
                            headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 201
 
-    response2 = client.post("/api/v1/lessons", json=
-    {
-        "student_email": "joe@bloggs.com",
-        "instrument": "piano",
-        "date": "20-03-26 14:30",
-        "duration": 30,
-    },
+    response2 = client.post("/api/v1/lessons", json=lesson_payload(date="20-03-26 14:30"),
                             headers={"Authorization": f"Bearer {token}"})
     data = response2.json()
 
@@ -764,24 +707,12 @@ def test_lesson_overlap_partial(client):
 
 def test_lesson_overlap_inside(client):
     token = get_auth_token(client)
-    response = client.post("/api/v1/lessons", json=
-    {
-        "student_email": "joe@bloggs.com",
-        "instrument": "piano",
-        "date": "20-03-26 14:00",
-        "duration": 60,
-    },
+    response = client.post("/api/v1/lessons", json=lesson_payload(duration=60),
                            headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 201
 
-    response2 = client.post("/api/v1/lessons", json=
-    {
-        "student_email": "joe@bloggs.com",
-        "instrument": "piano",
-        "date": "20-03-26 14:10",
-        "duration": 30,
-    },
+    response2 = client.post("/api/v1/lessons", json=lesson_payload(date="20-03-26 14:10"),
                             headers={"Authorization": f"Bearer {token}"})
     data = response2.json()
 
@@ -790,37 +721,19 @@ def test_lesson_overlap_inside(client):
 
 def test_lesson_no_overlap_edge(client):
     token = get_auth_token(client)
-    response = client.post("/api/v1/lessons", json=
-    {
-        "student_email": "joe@bloggs.com",
-        "instrument": "piano",
-        "date": "20-03-26 14:00",
-        "duration": 60,
-    },
+    response = client.post("/api/v1/lessons", json=lesson_payload(),
                            headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 201
 
-    response2 = client.post("/api/v1/lessons", json=
-    {
-        "student_email": "joe@bloggs.com",
-        "instrument": "piano",
-        "date": "20-03-26 15:00",
-        "duration": 30,
-    },
+    response2 = client.post("/api/v1/lessons", json=lesson_payload(date="20-03-26 15:00"),
                             headers={"Authorization": f"Bearer {token}"})
 
     assert response2.status_code == 201
 
 def test_lesson_invalid_duration(client):
     token = get_auth_token(client)
-    response = client.post("/api/v1/lessons", json=
-    {
-        "student_email": "joe@bloggs.com",
-        "instrument": "piano",
-        "date": "20-03-26 14:00",
-        "duration": 20,
-    },
+    response = client.post("/api/v1/lessons", json=lesson_payload(duration=20),
                            headers={"Authorization": f"Bearer {token}"})
 
 
@@ -843,7 +756,7 @@ def test_lesson_update(client):
     assert data["datetime"] == "2026-01-07T13:00:00"
     assert data["duration"] == 60
 
-def test_nonexisting_lesson_update(client):
+def test_update_non_existent_lesson(client):
     token = get_auth_token(client)
     response = client.put("/api/v1/lessons/6", json=
     {

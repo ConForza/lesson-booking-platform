@@ -31,6 +31,8 @@ click==8.3.1
     #   rich-toolkit
     #   typer
     #   uvicorn
+coverage[toml]==7.13.5
+    # via pytest-cov
 dnspython==2.8.0
     # via email-validator
 email-validator==2.3.0
@@ -75,7 +77,9 @@ mdurl==0.1.2
 packaging==26.0
     # via pytest
 pluggy==1.6.0
-    # via pytest
+    # via
+    #   pytest
+    #   pytest-cov
 pwdlib[argon2]==0.3.0
     # via -r requirements.in
 pycparser==3.0
@@ -99,6 +103,10 @@ pygments==2.19.2
 pyjwt==2.11.0
     # via -r requirements.in
 pytest==9.0.2
+    # via
+    #   -r requirements.in
+    #   pytest-cov
+pytest-cov==7.1.0
     # via -r requirements.in
 python-dotenv==1.2.1
     # via
