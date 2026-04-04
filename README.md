@@ -18,6 +18,20 @@ This project implements a layered architecture, domain-driven validation, depend
 
 ---
 
+## Features
+
+- Student management (create, update, delete, list)
+- Lesson scheduling with conflict detection
+- Lesson filtering (by date, student, pagination)
+- Invoice preview generation
+- Authentication with JWT (register, login, protected routes)
+- Remaining lesson tracking per student
+- Centralised error handling with consistent API responses
+- Structured logging and request tracing
+- Full API test suite with CI integration
+
+---
+
 ## Project Structure
 
 - `app/api/v1/` – FastAPI routers
@@ -124,6 +138,16 @@ Application logs are written to `app.log`.
 
 - Request/response logging via FastAPI middleware
 - Service-level logging for domain events and validation errors
+
+---
+
+## Environment Variables
+
+The application requires the following environment variables:
+
+- `JWT_SECRET_KEY` – secret used to sign JWT tokens
+
+You can define these in a `.env` file for local development.
 
 ---
 
