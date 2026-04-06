@@ -9,6 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     env:
       JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
+      ENVIRONMENT: ${{ secrets.ENVIRONMENT }}
+      APP_NAME: ${{ secrets.APP_NAME }}
+      API_V1_PREFIX: ${{ secrets.APP_V1_PREFIX }}
+      VERSION: ${{ secrets.VERSION }}
 
     steps:
       - name: Checkout repository
