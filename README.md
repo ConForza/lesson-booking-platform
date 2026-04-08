@@ -50,6 +50,10 @@ https://lesson-reminder-api.onrender.com/docs
 - **Centralised error handling** for consistent API responses
 - **JWT-based authentication** with dependency-injected user context
 
+### Architecture Diagram
+
+![Architecture Diagram](docs/architecture-diagram.png)
+
 ---
 
 ## Project Structure
