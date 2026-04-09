@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    app_name: str = "Lesson Reminder API"
+    app_name: str = "Lesson Booking Platform"
     api_v1_prefix: str = "/api/v1"
     environment: str = "development"
     version: str = "0.1.0"

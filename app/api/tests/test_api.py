@@ -69,7 +69,7 @@ def test_root_returns_api_title(client):
     response = client.get("/")
     data = response.json()
 
-    assert data["message"] == "Lesson Reminder API"
+    assert data["message"] == "Lesson Booking Platform"
     assert data["environment"] == "development"
     assert data["version"] == "0.1.0"
 

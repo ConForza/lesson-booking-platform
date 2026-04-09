@@ -1,10 +1,10 @@
-# Lesson Reminder API
+# Lesson Booking Platform API
 
 A production-ready backend service designed to manage lesson scheduling, student tracking, and invoice generation for a music school.
 
 This project implements a layered architecture, domain-driven validation, dependency injection, and API-level testing using FastAPI and Pytest.
 
-![CI](https://github.com/ConForza/lesson-reminder-api/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/ConForza/lesson-booking-platform/actions/workflows/ci.yml/badge.svg)
 
 ---
 
@@ -95,7 +95,7 @@ The test suite includes:
 Build the image:
 
 ```bash
-docker build -t lesson-reminder-api .
+docker build -t lesson-booking-platform .
 ```
 
 Run the container:
@@ -103,7 +103,7 @@ Run the container:
 ```bash
 docker run -p 8000:8000 \
 -e JWT_SECRET_KEY=your-secret-key \
-lesson-reminder-api
+lesson-booking-platform
 ```
 
 ---
@@ -182,7 +182,7 @@ The application requires the following environment variables:
 - `JWT_SECRET_KEY` – secret used to sign JWT tokens
 - `ACCESS_TOKEN_EXPIRE_MINUTES` - defaults to 30
 - `ENVIRONMENT` - defaults to 'development'
-- `APP_NAME` - defaults to 'Lesson Reminder API' 
+- `APP_NAME` - defaults to 'Lesson Booking Platform' 
 - `API_V1_PREFIX` - defaults to '/api/v1'
 - `VERSION` - defaults to '0.1.0'
 
