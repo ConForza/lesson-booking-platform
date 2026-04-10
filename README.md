@@ -1,20 +1,32 @@
 # Lesson Booking Platform API
 
-A production-ready backend service designed to manage lesson scheduling, student tracking, and invoice generation for a music school.
+A production-ready backend service for managing lesson scheduling, student tracking, and invoice generation.
 
-This project implements a layered architecture, domain-driven validation, dependency injection, and API-level testing using FastAPI and Pytest.
+Built using FastAPI with a layered architecture, JWT authentication, Docker deployment, and full API test coverage.
 
-![CI](https://github.com/ConForza/lesson-booking-platform/actions/workflows/ci.yml/badge.svg)
+![CI Status](https://github.com/ConForza/lesson-booking-platform/actions/workflows/ci.yml/badge.svg)
+
+---
+
+## What This Project Demonstrates
+
+- Designing a layered backend architecture with clear separation of concerns
+- Building and testing RESTful APIs using FastAPI
+- Implementing JWT-based authentication and protected routes
+- Structuring applications using services and repository patterns
+- Writing comprehensive API and service-level tests with Pytest
+- Containerising applications with Docker
+- Deploying production-ready services with environment-based configuration
 
 ---
 
 ## Live API
 
 Base URL:
-https://lesson-reminder-api.onrender.com
+https://lesson-booking-platform.onrender.com
 
 Interactive docs:
-https://lesson-reminder-api.onrender.com/docs
+https://lesson-booking-platform.onrender.com/docs
 
 ---
 
